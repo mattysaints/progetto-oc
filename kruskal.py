@@ -21,6 +21,7 @@ class Mfset:
     def union(self, x, y):
         """
         Merge two disjoint sets.
+        :return: true if the union has been successful
         """
         if x not in self.parent or y not in self.parent:
             raise ValueError('Both elements must be in the Mfset')
