@@ -15,7 +15,7 @@ def bf_tsp(tsp: TSP, tour: np.array, best_tour: np.array, j):
         if tsp.tour_cost(tour) < tsp.tour_cost(best_tour):
             best_tour[:] = tour[:]
     else:
-        for i in range(j, len(tour)):
+        for i in range(j, tsp.num_cities):
             tour[i], tour[j] = tour[j], tour[i]
             bf_tsp(tsp, tour, best_tour, j + 1)
             tour[i], tour[j] = tour[j], tour[i]
@@ -35,3 +35,21 @@ if __name__ == '__main__':
 
     print(best_tour)
     print(tsp.tour_cost(best_tour))
+
+    print('#########################')
+
+    tsp = TSP(np.array([
+        [0, 1, 2, 8, 1],
+        [0, 0, 1, 10, 6],
+        [0, 0, 0, 5, 4],
+        [0, 0, 0, 0, 2],
+        [0, 0, 0, 0, 0]
+    ]))
+
+    tour, best_tour = np.array(range(5)), np.array(range(5))
+
+    bf_tsp(tsp, tour, best_tour, 0)
+
+    print(best_tour)
+    print(tsp.tour_cost(best_tour))
+
