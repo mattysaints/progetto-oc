@@ -72,11 +72,14 @@ class Mfset:
 # ______________________________________________________________________________________________________________________
 
 
-def mst_kruskal(graph: np.array):
+def mst_kruskal(graph: np.array, l, excluded, included):
     """
     Returns the Minimum Spanning Tree of the graph represented by a cost matrix with Kruskal's Algorithm, using the
-    Mfset data-structure.
+    Mfset data-structure. Subroutine of the branch&bound algorithm.
 
+    :param l: excluded node
+    :param excluded: set of edges that must be excluded
+    :param included: set of edges that must be included
     :param graph: directed or undirected graph
     :return: MST (cost matrix), MST cost
     """
@@ -86,18 +89,26 @@ def mst_kruskal(graph: np.array):
     if not np.alltrue(np.diag(graph) == 0):
         raise ValueError('Invalid cost matrix: cost of the elements in diagonal must be 0')
 
-    mfs = Mfset(range(graph.shape[0]))
-    sorted_edges = ((i, j) for i, j in zip(*np.unravel_index(np.argsort(graph, axis=None), graph.shape)) if j > i)
+    mfs = Mfset(list(n for n in range(graph.shape[0]) if n != l))
+    sorted_edges = ((i, j) for i, j in zip(*np.unravel_index(np.argsort(graph, axis=None), graph.shape)) if j > i and l not in (i,j))
 
     mst = np.zeros(graph.shape)
     cost = 0
+
+    for i, j in included:
+        if l in (i,j):
+            continue
+
+        if mfs.union(i, j):
+            mst[i, j] = 1
+            cost += graph[i, j]
 
     for i, j in sorted_edges:
         if mfs.is_trivial():
             break
 
-        if mfs.union(i, j):
-            mst[i, j] = graph[i, j]
+        if (i, j) not in excluded and mfs.union(i, j):
+            mst[i, j] = 1
             cost += graph[i, j]
 
     return mst, cost
