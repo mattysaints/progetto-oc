@@ -18,7 +18,7 @@ def is_hamiltonian(x):
     return True
 
 
-def max_cost_edge(x, tsp: TSP):
+def max_cost_edge(x, excluded, included, tsp: TSP):
     n = x.shape[0]
 
     for i in range(n):
@@ -34,7 +34,7 @@ def max_cost_edge(x, tsp: TSP):
                 max_edge = (ip, jp)
                 max_cost = tsp.cost(ip, jp)
 
-        if count != 2:
+        if count != 2 and max_edge not in included and max_edge not in excluded:
             return max_edge
 
     raise Exception('Hamiltonian cycle')
@@ -61,8 +61,16 @@ def bb_tsp(tsp: TSP):
     x_p = np.zeros(tsp.cost_mat.shape)
     stack = [(set(), set())]
 
+    node = 0
+
     while stack:
+        print(node)
+        node += 1
+
         excluded, included = stack.pop(0)
+        # print(f'Esclusi: {excluded}')
+        # print(f'Inclusi: {included}\n')
+        # input('>')
 
         l = choose_node(excluded, tsp)
 
@@ -86,7 +94,7 @@ def bb_tsp(tsp: TSP):
             if is_hamiltonian(x_p):
                 u = z_p
             else:
-                i, j = max_cost_edge(x_p, tsp)
+                i, j = max_cost_edge(x_p, excluded, included, tsp)
 
                 excluded_1 = excluded.union({(i, j)})
                 included_1 = included
@@ -111,7 +119,8 @@ if __name__ == '__main__':
         [0, 0, 0, 0, 0]
     ]))
 
-    x, z = bb_tsp(tsp)
+    for _ in range(100):
+        x, z = bb_tsp(tsp)
 
-    print(x)
-    print(z)
+        print(x)
+        print(z)
