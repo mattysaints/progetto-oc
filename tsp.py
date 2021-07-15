@@ -49,6 +49,13 @@ class TSP:
         return self.cost_mat.__str__()
 
 
+def triu(i, j):
+    if i > j:
+        j, i = i, j
+
+    return i, j
+
+
 if __name__ == '__main__':
     mat = np.triu(np.ones((5, 5)), 1)
 

@@ -90,18 +90,16 @@ def mst_kruskal(graph: np.array, l, excluded, included):
         raise ValueError('Invalid cost matrix: cost of the elements in diagonal must be 0')
 
     mfs = Mfset(list(n for n in range(graph.shape[0]) if n != l))
-    sorted_edges = ((i, j) for i, j in zip(*np.unravel_index(np.argsort(graph, axis=None), graph.shape)) if j > i and l not in (i,j))
+    sorted_edges = ((i, j) for i, j in zip(*np.unravel_index(np.argsort(graph, axis=None), graph.shape))
+                    if j > i and l not in (i, j))
 
     mst = np.zeros(graph.shape)
-    cost = 0
 
-    for i, j in included:
-        if l in (i,j):
-            continue
-
+    for i, j in (e for e in included if l not in e):
         if mfs.union(i, j):
             mst[i, j] = 1
-            cost += graph[i, j]
+        else:
+            return None
 
     for i, j in sorted_edges:
         if mfs.is_trivial():
@@ -109,9 +107,8 @@ def mst_kruskal(graph: np.array, l, excluded, included):
 
         if (i, j) not in excluded and mfs.union(i, j):
             mst[i, j] = 1
-            cost += graph[i, j]
 
-    return mst, cost
+    return mst if mfs.is_trivial() else None  # None if not MST
 
 
 if __name__ == '__main__':
