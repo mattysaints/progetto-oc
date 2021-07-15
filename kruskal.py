@@ -96,10 +96,10 @@ def mst_kruskal(graph: np.array, l, excluded, included):
     mst = np.zeros(graph.shape)
 
     for i, j in (e for e in included if l not in e):
-        if mfs.union(i, j):
-            mst[i, j] = 1
-        else:
+        if not mfs.union(i, j):
             return None
+
+        mst[i, j] = 1
 
     for i, j in sorted_edges:
         if mfs.is_trivial():
@@ -119,7 +119,9 @@ if __name__ == '__main__':
         [0, 0, 0, 0]
     ])
 
-    mst, cost = mst_kruskal(g)
+    mst = mst_kruskal(g, None, set(), set())
+
+    cost = np.sum(mst * g)
 
     print(mst)
     print(cost)
