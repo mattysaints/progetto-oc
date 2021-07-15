@@ -1,8 +1,9 @@
 from collections import Counter
 
 import numpy as np
-from tsp import TSP, triu
+
 from kruskal import mst_kruskal
+from tsp import TSP, triu
 
 
 def is_hamiltonian(x):
@@ -104,7 +105,8 @@ def bb_tsp(tsp: TSP):
 
                 if x_p is not None:
                     l_included = list(edge for edge in included if l in edge)
-                    l_free_edges = (triu(l, i) for i in range(tsp.num_cities) if i != l and triu(l, i) not in included)
+                    l_free_edges = (triu(l, i) for i in range(tsp.num_cities)
+                                    if i != l and triu(l, i) not in excluded and triu(l, i) not in included)
                     l_edges = sorted(l_free_edges, key=lambda edge: tsp.cost(*edge))[:2 - len(l_included)] + l_included
 
                     for edge in l_edges:
