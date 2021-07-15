@@ -21,6 +21,7 @@ class Mfset:
     def union(self, x, y):
         """
         Merge two disjoint sets.
+
         :return: true if the union has been successful
         """
         if x not in self.parent or y not in self.parent:
@@ -75,7 +76,8 @@ class Mfset:
 def mst_kruskal(graph: np.array, l, excluded, included):
     """
     Returns the Minimum Spanning Tree of the graph represented by a cost matrix with Kruskal's Algorithm, using the
-    Mfset data-structure. Subroutine of the branch&bound algorithm.
+    Mfset data-structure. The algorithm considers *included* and *excluded*, which respectively are the sets of edges
+    that must be in the MST and cannot be in the MST.
 
     :param l: excluded node
     :param excluded: set of edges that must be excluded

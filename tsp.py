@@ -50,6 +50,8 @@ class TSP:
 
 
 def triu(i, j):
+    """Returns the edge in the form (i,j) with j >= i, such that the corresponding matrix is upper triangular. Used in
+    the context of the symmetric TSP"""
     if i > j:
         j, i = i, j
 
