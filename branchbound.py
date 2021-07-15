@@ -6,6 +6,7 @@ from kruskal import mst_kruskal
 
 
 def is_hamiltonian(x):
+    """Returns true if the graph (boolean matrix) is a Hamiltonian Cycle"""
     for i in range(x.shape[0]):
         count = 0
         for j in range(x.shape[1]):
@@ -21,6 +22,8 @@ def is_hamiltonian(x):
 
 
 def max_cost_edge(x, included, tsp: TSP):
+    """Returns the maximum cost edge of a node with degree d != 2, if such edge is not included. Returns None if
+    such edge doesn't exists"""
     for i in range(x.shape[0]):
         count = 0
         max_edge = None
@@ -43,6 +46,10 @@ def max_cost_edge(x, included, tsp: TSP):
 
 
 def candidates(excluded, included, tsp):
+    """Returns a list of candidate nodes for constructing the 1-tree. A node can form a 1-tree if and only if:
+
+        - has at least 2 free edges, meaning at least 2 edges that are not excluded
+        - has at most 2 included edges"""
     res = []
 
     for n in range(tsp.num_cities):
@@ -75,6 +82,12 @@ def unfeasible(excluded, tsp: TSP):
 
 
 def bb_tsp(tsp: TSP):
+    """
+    Branch and bound algorithm for the symmetric TSP based on the 1-tree relaxation.
+
+    :param tsp: TSP instance
+    :return: optimal solution and the optimal value, if the problem has a solution
+    """
     u = np.inf
     x_p = np.zeros(tsp.cost_mat.shape)
     stack = [(set(), set())]
@@ -82,47 +95,33 @@ def bb_tsp(tsp: TSP):
     while stack:
         excluded, included = stack.pop(0)
 
-        if unfeasible(excluded, tsp):
-            continue
+        if not unfeasible(excluded, tsp):
+            l_nodes = candidates(excluded, included, tsp)
+            z_p = np.inf
 
-        l_nodes = candidates(excluded, included, tsp)
+            for l in l_nodes:
+                x_p = mst_kruskal(tsp.cost_mat, l, excluded, included)
 
-        z_p = np.inf
+                if x_p is not None:
+                    l_included = list(edge for edge in included if l in edge)
+                    l_free_edges = (triu(l, i) for i in range(tsp.num_cities) if i != l and triu(l, i) not in included)
+                    l_edges = sorted(l_free_edges, key=lambda edge: tsp.cost(*edge))[:2 - len(l_included)] + l_included
 
-        for l in l_nodes:
-            x_p = mst_kruskal(tsp.cost_mat, l, excluded, included)
+                    for edge in l_edges:
+                        x_p[edge] = 1
 
-            if x_p is None:
-                continue
+                    z_p = np.sum(x_p * tsp.cost_mat)
+                    break  # z_p found, end for
 
-            l_included = list(edge for edge in included if l in edge)
-            l_free_edges = (triu(l, i) for i in range(tsp.num_cities) if i != l and triu(l, i) not in included)
-            l_edges = sorted(l_free_edges, key=lambda edge: tsp.cost(*edge))[:2 - len(l_included)] + l_included
+            if z_p < u:
+                if is_hamiltonian(x_p):
+                    u = z_p
+                else:
+                    edge = max_cost_edge(x_p, included, tsp)
 
-            for edge in l_edges:
-                x_p[edge] = 1
-
-            z_p = np.sum(x_p * tsp.cost_mat)
-            break
-
-        if z_p < u:
-            if is_hamiltonian(x_p):
-                u = z_p
-            else:
-                edge = max_cost_edge(x_p, included, tsp)
-
-                if not edge:
-                    continue
-
-                i, j = edge
-
-                excluded_1 = excluded.union({triu(i, j)})
-                included_1 = included
-
-                excluded_2 = excluded
-                included_2 = included.union({triu(i, j)})
-
-                stack = [(excluded_1, included_1), (excluded_2, included_2)] + stack
+                    if edge:
+                        i, j = edge
+                        stack = [(excluded | {triu(i, j)}, included), (excluded, included | {triu(i, j)})] + stack
 
     if u == np.inf:
         return None, np.inf
