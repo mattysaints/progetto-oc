@@ -1,3 +1,4 @@
+import pprint
 from collections import Counter
 
 import numpy as np
@@ -36,11 +37,11 @@ def max_cost_edge(x, included, tsp: TSP):
 
             count += x[triu(i, j)]
 
-            if x[triu(i, j)] == 1 and max_cost < tsp.cost(i, j):
+            if x[triu(i, j)] == 1 and max_cost < tsp.cost(i, j) and triu(i, j) not in included:
                 max_edge = triu(i, j)
                 max_cost = tsp.cost(i, j)
 
-        if count != 2 and max_edge not in included:
+        if count != 2 and max_edge is not None:
             return max_edge
 
     return None
