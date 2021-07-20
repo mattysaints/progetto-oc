@@ -10,12 +10,7 @@ from tsp import TSP, triu
 def is_hamiltonian(x):
     """Returns true if the graph (boolean matrix) is a Hamiltonian Cycle"""
     for i in range(x.shape[0]):
-        count = 0
-        for j in range(x.shape[1]):
-            if i == j:
-                continue
-
-            count += x[triu(i, j)]
+        count = np.sum(x[i, :]) + np.sum(x[:, i])
 
         if count != 2:
             return False
@@ -72,6 +67,7 @@ def bb_tsp(tsp: TSP):
     :return: optimal solution and the optimal value, if the problem has a solution
     """
     u = np.inf
+    best_tour = None
     x_p = np.zeros(tsp.cost_mat.shape)
     stack = [(set(), set())]
 
@@ -99,6 +95,7 @@ def bb_tsp(tsp: TSP):
             if z_p < u:
                 if is_hamiltonian(x_p):
                     u = z_p
+                    best_tour = np.array(x_p)
                 else:
                     edge = max_cost_edge(x_p, included, tsp)
 
@@ -109,7 +106,7 @@ def bb_tsp(tsp: TSP):
     if u == np.inf:
         return None, np.inf
     else:
-        return x_p, u
+        return best_tour, u
 
 
 if __name__ == '__main__':
@@ -121,16 +118,7 @@ if __name__ == '__main__':
         [0, 0, 0, 0, 0]
     ]))
 
-    nones = 0
-    for _ in range(1000):
-        x_star, z_star = bb_tsp(tsp)
+    x, z = bb_tsp(tsp)
 
-        if z_star == np.inf:
-            nones += 1
-
-        print(x_star)
-        print(z_star)
-        print('#########################\n')
-
-    print('###############################\n')
-    print(f'Falliti: {nones}')
+    print(x)
+    print(z)
