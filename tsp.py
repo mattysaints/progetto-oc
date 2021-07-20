@@ -48,6 +48,23 @@ class TSP:
         """Representation of TSP as a cost matrix"""
         return self.cost_mat.__str__()
 
+    def latex_table(self):
+        """Latex cost matrix representation"""
+
+        str_mat = ''
+        for i in range(self.num_cities):
+            for j in range(self.num_cities):
+                str_mat += (str(self.cost_mat[i, j]) if j > i else '') + ' & '
+            str_mat += str(i) + '\\\\\n'
+
+        str_mat = str_mat[:-2] + '\n'
+
+        res = ("\\begin{center}\n\\begin{tabular}{ " + ' '.join('c' for _ in range(self.num_cities)) + " | c }\n" +
+               ' & '.join(str(i) for i in range(self.num_cities)) + " & \\\\\n" +
+               "\\hline\n" + str_mat + "\\end{tabular}\n" + "\\end{center}\n")
+
+        return res
+
 
 def triu(i, j):
     """Returns the edge in the form (i,j) with j >= i, such that the corresponding matrix is upper triangular. Used in
