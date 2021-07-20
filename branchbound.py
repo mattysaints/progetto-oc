@@ -47,28 +47,6 @@ def max_cost_edge(x, included, tsp: TSP):
     return None
 
 
-def candidates(excluded, included, tsp):
-    """Returns a list of candidate nodes for constructing the 1-tree. A node can form a 1-tree if and only if:
-
-        - has at least 2 free edges, meaning at least 2 edges that are not excluded
-        - has at most 2 included edges"""
-    res = []
-
-    for n in range(tsp.num_cities):
-
-        free_edges = tsp.num_cities - 1
-        for ij in excluded:
-            if n in ij:
-                free_edges -= 1
-
-        num_incl_edges = len([e for e in included if n in e])
-
-        if free_edges >= 2 and num_incl_edges <= 2:
-            res.append(n)
-
-    return res
-
-
 def unfeasible(excluded, included, tsp: TSP):
     """Returns true if all the edges of a node are excluded, thus the subproblem is unfeasible."""
     for n in range(tsp.num_cities):
@@ -101,10 +79,9 @@ def bb_tsp(tsp: TSP):
         excluded, included = stack.pop(0)
 
         if not unfeasible(excluded, included, tsp):
-            l_nodes = candidates(excluded, included, tsp)
             z_p = np.inf
 
-            for l in l_nodes:
+            for l in range(tsp.num_cities):
                 x_p = mst_kruskal(tsp.cost_mat, l, excluded, included)
 
                 if x_p is not None:
