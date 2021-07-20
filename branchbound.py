@@ -69,15 +69,18 @@ def candidates(excluded, included, tsp):
     return res
 
 
-def unfeasible(excluded, tsp: TSP):
+def unfeasible(excluded, included, tsp: TSP):
     """Returns true if all the edges of a node are excluded, thus the subproblem is unfeasible."""
-    num_excl = Counter()
+    for n in range(tsp.num_cities):
 
-    for i, j in excluded:
-        num_excl.update([i, j])
+        free_edges = tsp.num_cities - 1
+        for ij in excluded:
+            if n in ij:
+                free_edges -= 1
 
-    for count in num_excl.values():
-        if count == tsp.num_cities - 1:
+        num_incl_edges = len([e for e in included if n in e])
+
+        if free_edges < 2 or num_incl_edges > 2:
             return True
 
     return False
@@ -97,7 +100,7 @@ def bb_tsp(tsp: TSP):
     while stack:
         excluded, included = stack.pop(0)
 
-        if not unfeasible(excluded, tsp):
+        if not unfeasible(excluded, included, tsp):
             l_nodes = candidates(excluded, included, tsp)
             z_p = np.inf
 
