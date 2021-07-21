@@ -149,8 +149,8 @@ def branchbound_balas_ex1_test():
     inst.to_graphviz('balas_ex1/balas_ex1.dot')
     inst.to_graphviz('balas_ex1/balas_ex1_tour.dot', tour=x)
 
-    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1.dot -o balas_ex1/balas_ex1.png')
-    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1_tour.dot -o balas_ex1/balas_ex1_tour.png')
+    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1.dot -o balas_ex1/balas_ex1.png -Gdpi=800')
+    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1_tour.dot -o balas_ex1/balas_ex1_tour.png -Gdpi=800')
 
 
 # def big_test():
