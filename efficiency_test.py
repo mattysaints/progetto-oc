@@ -137,12 +137,20 @@ def branchbound_balas_ex1_test():
     inst = get_balas_ex1_tsp()
 
     start = time.time()
-    x,z = bb_tsp(inst)
+    x, z = bb_tsp(inst)
     end = time.time()
 
     print(f'Best tour: {get_tour(x)}')
     print(f'Cost: {z}')
     print(f'Time: {end - start}')
+
+    print()
+    print(inst.to_latex())
+    inst.to_graphviz('balas_ex1/balas_ex1.dot')
+    inst.to_graphviz('balas_ex1/balas_ex1_tour.dot', tour=x)
+
+    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1.dot -o balas_ex1/balas_ex1.png')
+    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1_tour.dot -o balas_ex1/balas_ex1_tour.png')
 
 
 # def big_test():
