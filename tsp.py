@@ -1,3 +1,6 @@
+import os
+import re
+
 import numpy as np
 
 
@@ -48,7 +51,7 @@ class TSP:
         """Representation of TSP as a cost matrix"""
         return self.cost_mat.__str__()
 
-    def latex_table(self):
+    def to_latex(self):
         """Latex cost matrix representation"""
 
         str_mat = ''
@@ -59,11 +62,39 @@ class TSP:
 
         str_mat = str_mat[:-2] + '\n'
 
+        str_mat = str_mat.replace('inf', '$\\infty$')
+
         res = ("\\begin{center}\n\\begin{tabular}{ " + ' '.join('c' for _ in range(self.num_cities)) + " | c }\n" +
                ' & '.join(str(i) for i in range(self.num_cities)) + " & \\\\\n" +
                "\\hline\n" + str_mat + "\\end{tabular}\n" + "\\end{center}\n")
 
         return res
+
+    def to_graphviz(self, path, **kwargs):
+        """Graphviz graph representation. Saves dot file in *path*"""
+
+        res = 'graph tsp {\n\tnode [shape=circle]\nedge [len=1.5]\n'
+
+        # if 'splines' in kwargs and not kwargs['splines']:
+        #     res += 'splines=false\n'
+
+        res += 'overlap = scalexy\n'
+
+        for n in range(self.num_cities):
+            res += f'\ta{n} [label={n}]\n'
+
+        for i in range(self.num_cities):
+            for j in range(i+1,self.num_cities):
+                if self.cost_mat[i,j] < np.inf:
+                    if 'tour' in kwargs and kwargs['tour'][i, j] == 1:
+                        res += f'\ta{i} -- a{j} [label={self.cost_mat[i,j]}, penwidth=3]\n'
+                    else:
+                        res += f'\ta{i} -- a{j} [label={self.cost_mat[i, j]}]\n'
+
+        res += '}'
+
+        with open(path,'w+') as f:
+            f.write(res)
 
 
 def triu(i, j):
