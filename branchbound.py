@@ -89,8 +89,8 @@ def bb_tsp(tsp: TSP):
                     for edge in l_edges:
                         x_p[edge] = 1
 
-                    z_p = np.sum(x_p * tsp.cost_mat)
-                    break  # z_p found, end for
+                    z_p = np.nansum(x_p * tsp.cost_mat)
+                    break  # z_p    found, end for
 
             if z_p < u:
                 if is_hamiltonian(x_p):
