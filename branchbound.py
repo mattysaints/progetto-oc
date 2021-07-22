@@ -59,6 +59,24 @@ def unfeasible(excluded, included, tsp: TSP):
     return False
 
 
+def min_cost_1_tree(l, excluded, included, tsp):
+    """Returns the minimum cost 1-tree with respect to fixed edges. Returns None if doesn't exists"""
+    x_p = mst_kruskal(tsp.cost_mat, l, excluded, included)
+
+    if x_p is not None:
+        l_included = list(edge for edge in included if l in edge)
+        l_free_edges = (triu(l, i) for i in range(tsp.num_cities)
+                        if i != l and triu(l, i) not in excluded and triu(l, i) not in included)
+        l_edges = sorted(l_free_edges, key=lambda edge: tsp.cost(*edge))[:2 - len(l_included)] + l_included
+
+        for edge in l_edges:
+            x_p[edge] = 1
+
+        return x_p, np.nansum(x_p * tsp.cost_mat)
+    else:
+        return None, np.inf
+
+
 def bb_tsp(tsp: TSP):
     """
     Branch and bound algorithm for the symmetric TSP based on the 1-tree relaxation.
@@ -78,19 +96,10 @@ def bb_tsp(tsp: TSP):
             z_p = np.inf
 
             for l in range(tsp.num_cities):
-                x_p = mst_kruskal(tsp.cost_mat, l, excluded, included)
+                x_p, z_p = min_cost_1_tree(l, excluded, included, tsp)
 
                 if x_p is not None:
-                    l_included = list(edge for edge in included if l in edge)
-                    l_free_edges = (triu(l, i) for i in range(tsp.num_cities)
-                                    if i != l and triu(l, i) not in excluded and triu(l, i) not in included)
-                    l_edges = sorted(l_free_edges, key=lambda edge: tsp.cost(*edge))[:2 - len(l_included)] + l_included
-
-                    for edge in l_edges:
-                        x_p[edge] = 1
-
-                    z_p = np.nansum(x_p * tsp.cost_mat)
-                    break  # z_p    found, end for
+                    break
 
             if z_p < u:
                 if is_hamiltonian(x_p):
