@@ -20,12 +20,20 @@ def parse_tsp(path):
 
 def to_mathprog(cost_mat: np.array, path):
     mat_str = ' '.join(str(i + 1) for i in range(cost_mat.shape[1])) + ' :=\n'
+    infinite = []
     for i in range(cost_mat.shape[0]):
-        mat_str += '\t' + str(i + 1) + ' ' + ' '.join(
-            ('.' if j <= i else str(cost_mat[i, j])) for j in range(cost_mat.shape[1]))
+        mat_str += '\t' + str(i + 1)
+        for j in range(cost_mat.shape[1]):
+            if cost_mat[i, j] < np.inf:
+                mat_str += ' ' + ('.' if j <= i else str(cost_mat[i, j]))
+            else:
+                infinite.append((i + 1, j + 1))
+                mat_str += ' 0'
 
         if i < cost_mat.shape[0] - 1:
             mat_str += '\n'
+
+    infinite_str = ', '.join(str(e) for e in infinite)
 
     program = r"""
     set I;
@@ -35,10 +43,11 @@ set SS := 0 .. (2**n - 1);
 
 set POW {k in SS} := {i in I: (k div 2**(i-1)) mod 2 = 1};
 
+"""+('set INFINITE := {' + infinite_str + '};' if infinite else '')+r"""
 
 set LINKS := {i in I, j in I: i < j};
 
-param cost {LINKS} >= 0;
+param cost {LINKS};
 var x {LINKS} binary;
 
 minimize TotCost: sum {(i,j) in LINKS} cost[i,j] * x[i,j];
@@ -49,11 +58,13 @@ subj to Tour {i in I}:
 subj to SubtourElim {k in SS diff {0,2**n-1}}:
    sum {i in POW[k], j in I diff POW[k]: (i,j) in LINKS} x[i,j] +
    sum {i in POW[k], j in I diff POW[k]: (j,i) in LINKS} x[j,i] >= 2;
+   
+"""+('subj to Inf{(i,j) in INFINITE}: x[i,j] = 0;' if infinite else '')+r"""
 
 solve;
 
 printf "------------------------------------------------------\n";
-printf{i in I, j in I: j>i and x[i,j] == 1} "(%d, %d)\n", i, j;
+printf{i in I, j in I: j>i and x[i,j] == 1} "(%d, %d)\n", i-1, j-1;
 printf "Cost: %d\n", sum{i in I, j in I: j > i} x[i,j]*cost[i,j];
 printf "------------------------------------------------------\n";
 
@@ -90,4 +101,4 @@ if __name__ == '__main__':
         [1972, 579, 1260, 987, 371, 999, 701, 2099, 600, 1162, 1200, 504, 0],
     ]).astype(dtype=np.float64)
 
-    to_mathprog(dist[:5,:5], 'instances/11.tsp')
+    to_mathprog(dist[:5, :5], 'instances/11.tsp')
