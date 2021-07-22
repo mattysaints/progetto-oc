@@ -10,6 +10,8 @@ from tsp import TSP
 from tsp_parser import to_mathprog
 
 
+# INSTANCES ____________________________________________________________________________________________________________
+
 def get_13_cities_tsp(n):
     """Returns a submatrix nxn of the 13 cities instance"""
     return TSP(np.triu([
@@ -42,6 +44,23 @@ def get_balas_ex1_tsp():
         [0, 0, 0, 0, 0, 0, 0, 0]
     ]))
 
+
+def get_negative_cost_tsp():
+    """TSP instance with negative cost edges"""
+    return TSP(np.array([
+        [0, 10, np.inf, 5, np.inf, np.inf, 14, np.inf, np.inf],
+        [0, 0, np.inf, 7, np.inf, 2, np.inf, np.inf, 32],
+        [0, 0, 0, 3, np.inf, 12, 1, np.inf, np.inf],
+        [0, 0, 0, 0, 10, np.inf, np.inf, -11, np.inf],
+        [0, 0, 0, 0, 0, np.inf, 1, np.inf, 9],
+        [0, 0, 0, 0, 0, 0, np.inf, -1, -4],
+        [0, 0, 0, 0, 0, 0, 0, 1, np.inf],
+        [0, 0, 0, 0, 0, 0, 0, 0, 5],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ]))
+
+
+# UTILS ________________________________________________________________________________________________________________
 
 def get_tour(x):
     """Converts a matrix representing a tour to a list of nodes"""
@@ -108,8 +127,10 @@ def cities_13_bf(n):
     return elapsed
 
 
-def branchbound_13_cities_test():
-    """Executes the test of branch and bound algorithm using the 13 cities instance"""
+# TESTS ________________________________________________________________________________________________________________
+
+def branchbound_13_cities_to_json():
+    """Saves in a JSON file the time of execution of the branch and bound algorithm on the 13 cities instance"""
     bb = []
     for n in range(3, 14):
         print(f'N° CITIES: {n}')
@@ -120,8 +141,8 @@ def branchbound_13_cities_test():
         json.dump(bb, f)
 
 
-def bruteforce_13_cities_test():
-    """Executes the test of brute-force algorithm using the 13 cities instance, with at most 11 cities"""
+def bruteforce_13_cities_to_json():
+    """Saves in a JSON file the time of execution of the brute-force on the 13 cities instance"""
     bf = []
     for n in range(3, 12):
         print(f'N° CITIES: {n}')
@@ -132,9 +153,31 @@ def bruteforce_13_cities_test():
         json.dump(bf, f)
 
 
-def branchbound_balas_ex1_test():
+def branchbound_13_cities_test(glpk=False):
+    """Executes the test of branch and bound algorithm using the 13 cities instance: 170 secs circa"""
+    if glpk:
+        cities_13_glpk(13)
+
+    cities_13_bb(13)
+
+
+def bruteforce_11_cities_test(glpk=False):
+    """Executes the test of brute-force algorithm using the 13 cities instance with 11 cities: 350 secs circa"""
+    if glpk:
+        cities_13_glpk(13)
+
+    cities_13_bf(13)
+
+
+def branchbound_balas_ex1_test(glpk=False, save=False):
     """Executes the test of branch and bound algorithm using the graph from example 1 in Balas, Toth [1983]"""
     inst = get_balas_ex1_tsp()
+
+    if glpk:
+        to_mathprog(inst.cost_mat, 'instances/balas_ex1.mod')
+        print('======================================')
+        os.system('glpsol --math instances/balas_ex1.mod')
+        print()
 
     start = time.time()
     x, z = bb_tsp(inst)
@@ -144,30 +187,46 @@ def branchbound_balas_ex1_test():
     print(f'Cost: {z}')
     print(f'Time: {end - start}')
 
-    print()
-    print(inst.to_latex())
-    inst.to_graphviz('balas_ex1/balas_ex1.dot')
-    inst.to_graphviz('balas_ex1/balas_ex1_tour.dot', tour=x)
+    if save:
+        print()
+        print(inst.to_latex())
+        inst.to_graphviz('balas_ex1/balas_ex1.dot')
+        inst.to_graphviz('balas_ex1/balas_ex1_tour.dot', tour=x)
 
-    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1.dot -o balas_ex1/balas_ex1.png -Gdpi=800')
-    # os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1_tour.dot -o balas_ex1/balas_ex1_tour.png -Gdpi=800')
+        os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1.dot -o balas_ex1/balas_ex1.png -Gdpi=800')
+        os.system('neato -Gstart=2 -Tpng balas_ex1/balas_ex1_tour.dot -o balas_ex1/balas_ex1_tour.png -Gdpi=800')
 
 
-# def big_test():
-#     tsp_instance = parse_tsp('instances/xqf131.tsp')
-#
-#     start = time.time()
-#     best_tour = list(range(tsp_instance.num_cities))
-#     bf_tsp(tsp_instance, list(best_tour), best_tour, 0)
-#     x, z = bb_tsp(tsp_instance)
-#     end = time.time()
-#
-#     print(x)
-#     print(z)
-#
-#     print(f'Time: {end - start}')
+def branchbound_negative_cost_test(glpk=False, save=False):
+    """Executes the test of branch and bound algorithm using a graph with negative cost edges"""
+    inst = get_negative_cost_tsp()
+
+    if glpk:
+        to_mathprog(inst.cost_mat, 'instances/negative_cost.mod')
+        print('======================================')
+        os.system('glpsol --math instances/negative_cost.mod')
+        print()
+
+    start = time.time()
+    x, z = bb_tsp(inst)
+    end = time.time()
+
+    print('Branch and bound:')
+    print(f'Best tour: {get_tour(x)}')
+    print(f'Cost: {z}')
+    print(f'Time: {end - start}')
+
+    if save:
+        print()
+        print(inst.to_latex())
+
+        inst.to_graphviz('negative_cost/instance.dot', tour=x)
+
+        os.system('neato -Gstart=5 -Tpng negative_cost/instance.dot -o negative_cost/instance.png -Gdpi=800')
+
 
 if __name__ == '__main__':
-    # bruteforce_13_cities_test()
     # branchbound_13_cities_test()
-    branchbound_balas_ex1_test()
+    # bruteforce_11_cities_test()
+    # branchbound_balas_ex1_test(glpk=True)
+    branchbound_negative_cost_test(glpk=True)
