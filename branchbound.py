@@ -9,13 +9,8 @@ from tsp import TSP, triu
 
 def is_hamiltonian(x):
     """Returns true if the graph (boolean matrix) is a Hamiltonian Cycle"""
-    for i in range(x.shape[0]):
-        count = np.sum(x[i, :]) + np.sum(x[:, i])
-
-        if count != 2:
-            return False
-
-    return True
+    count = np.sum(x, axis=0) + np.sum(x, axis=1)
+    return np.all(count == 2)
 
 
 def max_cost_edge(x, included, tsp: TSP):
