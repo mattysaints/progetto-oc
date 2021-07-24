@@ -137,7 +137,7 @@ def generate_random_tsp(n, amplitude=100, density=1.0):
 
     cost = np.triu(np.random.rand(n, n), 1) * amplitude
     k = 0
-    missing_edges = np.ceil(n * (n - 1) / 2 * density)
+    missing_edges = np.ceil(n * (n - 1) / 2 * (1 - density))
     while k < missing_edges:
         i = np.random.randint(0, n - 1)
         j = np.random.randint(i + 1, n)
