@@ -64,6 +64,9 @@ def get_negative_cost_tsp():
 
 def get_tour(x):
     """Converts a matrix representing a tour to a list of nodes"""
+    if x is None:
+        return None
+
     coords = []
     for i in range(x.shape[0]):
         for j in range(i + 1, x.shape[1]):
