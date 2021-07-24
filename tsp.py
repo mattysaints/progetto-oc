@@ -57,7 +57,7 @@ class TSP:
         str_mat = ''
         for i in range(self.num_cities):
             for j in range(self.num_cities):
-                str_mat += (str(self.cost_mat[i, j]) if j > i else '') + ' & '
+                str_mat += (f'{self.cost_mat[i, j]:.2f}' if j > i else '') + ' & '
             str_mat += str(i) + '\\\\\n'
 
         str_mat = str_mat[:-2] + '\n'
