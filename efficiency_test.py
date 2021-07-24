@@ -28,7 +28,7 @@ def get_13_cities_tsp(n):
         [1420, 1374, 940, 1056, 879, 225, 1891, 1605, 1645, 679, 0, 1017, 1200],
         [2145, 357, 1453, 1280, 586, 887, 1114, 2300, 653, 1272, 1017, 0, 504],
         [1972, 579, 1260, 987, 371, 999, 701, 2099, 600, 1162, 1200, 504, 0],
-    ])[:n, :n])
+    ]).astype(dtype=np.float64)[:n, :n])
 
 
 def get_balas_ex1_tsp():
@@ -127,29 +127,129 @@ def cities_13_bf(n):
     return elapsed
 
 
+def generate_random_tsp(n, amplitude=100, density=1.0):
+    """Generates a random instance with a certain size, density and amplitude"""
+    if not (0 <= density <= 1):
+        raise ValueError('Density must be in [0,1]')
+
+    cost = np.triu(np.random.rand(n, n), 1) * amplitude
+    k = 0
+    missing_edges = np.ceil(n * (n - 1) / 2 * density)
+    while k < missing_edges:
+        i = np.random.randint(0, n - 1)
+        j = np.random.randint(i + 1, n)
+
+        if cost[i, j] < np.inf:
+            cost[i, j] = np.inf
+            k += 1
+
+    return TSP(cost)
+
+
+def sparse_15_tsp(n):
+    """Random 15 cities instance with amplitude 100 and density 0.5"""
+    return TSP(np.array([[0., 65.35407395, 82.02066841, np.inf, 26.42776741,
+                          80.22839733, 7.26261536, 20.59938701, 3.45792065, 13.53339106,
+                          18.93027924, np.inf, np.inf, np.inf, np.inf],
+                         [0., 0., 94.7436637, 35.06230813, 4.60995912,
+                          24.65805045, np.inf, 59.30012043, np.inf, np.inf,
+                          np.inf, 39.46101065, 61.27724871, 76.77158363, 54.9152151],
+                         [0., 0., 0., 51.59221173, 21.43707217,
+                          26.39082077, np.inf, 78.02823842, 13.31277999, np.inf,
+                          np.inf, np.inf, 32.84121003, np.inf, 3.52892054],
+                         [0., 0., 0., 0., np.inf,
+                          18.6165595, np.inf, np.inf, np.inf, 0.48668114,
+                          17.96264945, 67.81986838, 69.02247542, 65.22721433, 49.71590904],
+                         [0., 0., 0., 0., 0.,
+                          86.78892068, 39.28652005, 0.45134896, np.inf, 27.26308426,
+                          np.inf, 18.38232903, np.inf, 35.15828176, np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., np.inf, np.inf, np.inf, 34.92177903,
+                          np.inf, 88.17765553, 69.03601435, 23.7098743, 21.54493525],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., np.inf, np.inf, np.inf,
+                          np.inf, np.inf, np.inf, np.inf, 10.06522131],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 24.62976239, 75.12593736,
+                          np.inf, 26.69196017, 89.91296827, 83.65234724, 61.76288975],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 14.3781085,
+                          np.inf, np.inf, np.inf, np.inf, np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          np.inf, np.inf, np.inf, np.inf, 83.4599077],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          0., np.inf, np.inf, np.inf, np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          0., 0., np.inf, np.inf, np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          0., 0., 0., np.inf, np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., np.inf],
+                         [0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.]])[:n, :n])
+
+
+def sparse_13_bf(n):
+    """13 cities sparse brute-force test"""
+    instance = sparse_15_tsp(n)
+
+    print('======================================\nBrute-force:')
+    start = time.time()
+    best_tour = list(range(instance.num_cities))
+    bf_tsp(instance, list(best_tour), best_tour, 0)
+    end = time.time()
+
+    print(f'Best tour: {best_tour}')
+    print(f'Cost: {instance.tour_cost(best_tour)}')
+    elapsed = end - start
+    print(f'Time: {elapsed}')
+
+    return elapsed
+
+
+def sparse_13_bb(n):
+    """13 cities sparse branch and bound test"""
+    instance = sparse_15_tsp(n)
+
+    print('======================================\nBranch and bound:')
+    start = time.time()
+    x, z = bb_tsp(instance)
+    end = time.time()
+
+    print(f'Best tour: {get_tour(x)}')
+    print(f'Cost: {z}')
+    elapsed = end - start
+    print(f'Time: {elapsed}')
+
+    return elapsed
+
+
 # TESTS ________________________________________________________________________________________________________________
 
-def branchbound_13_cities_to_json():
-    """Saves in a JSON file the time of execution of the branch and bound algorithm on the 13 cities instance"""
+def time_13_cities_to_json():
+    """Saves in a JSON file the time of execution of the BB and BF algorithms on the 13 cities instance"""
     bb = []
     for n in range(3, 14):
         print(f'N° CITIES: {n}')
         bb.append(cities_13_bb(n))
         print()
 
-    with open('result/bb.json', 'w+') as f:
+    with open('versus/bb.json', 'w+') as f:
         json.dump(bb, f)
 
-
-def bruteforce_13_cities_to_json():
-    """Saves in a JSON file the time of execution of the brute-force on the 13 cities instance"""
     bf = []
     for n in range(3, 12):
         print(f'N° CITIES: {n}')
         bf.append(cities_13_bf(n))
         print()
 
-    with open('result/bf.json', 'w+') as f:
+    with open('versus/bf.json', 'w+') as f:
         json.dump(bf, f)
 
 
@@ -225,8 +325,61 @@ def branchbound_negative_cost_test(glpk=False, save=False):
         os.system('neato -Gstart=5 -Tpng negative_cost/instance.dot -o negative_cost/instance.png -Gdpi=800')
 
 
+def time_13_sparse_to_json():
+    """Saves in a JSON file the time of execution of the BB algorithm on the 13 cities sparse instance. The brute-force
+    is not executed because the sparseness of the graph doesn't change it's execution time"""
+    bb = []
+    for n in range(3, 14):
+        print(f'N° CITIES: {n}')
+        bb.append(sparse_13_bb(n))
+        print()
+
+    with open('versus/bb_sparse.json', 'w+') as f:
+        json.dump(bb, f)
+
+
+def branchbound_15_sparse_test(glpk=False, save=False):
+    """Executes the test of branch and bound algorithm using a random graph with 15 nodes"""
+    inst = sparse_15_tsp(15)
+
+    if glpk:
+        to_mathprog(inst.cost_mat, 'instances/random.mod')
+        print('======================================')
+        os.system('glpsol --math instances/random.mod')
+        print()
+
+    print('Branch and bound:')
+    start = time.time()
+    x, z = bb_tsp(inst)
+    end = time.time()
+
+    print(f'Best tour: {get_tour(x)}')
+    print(f'Cost: {z}')
+    print(f'Time: {end - start}')
+
+    if save:
+        print(inst.to_latex())
+
+
+def branchbound_random(n, amplitude=100, density=0.5, glpk=False):
+    """Executes the test of branch and bound algorithm using a random graph"""
+    inst = generate_random_tsp(n, amplitude, density)
+
+    if glpk:
+        to_mathprog(inst.cost_mat, 'instances/random.mod')
+        print('======================================')
+        os.system('glpsol --math instances/random.mod')
+        print()
+
+    print('Branch and bound:')
+    start = time.time()
+    x, z = bb_tsp(inst)
+    end = time.time()
+
+    print(f'Best tour: {get_tour(x)}')
+    print(f'Cost: {z}')
+    print(f'Time: {end - start}')
+
+
 if __name__ == '__main__':
-    # branchbound_13_cities_test()
-    # bruteforce_11_cities_test()
-    # branchbound_balas_ex1_test(glpk=True)
-    branchbound_negative_cost_test(glpk=True)
+    branchbound_random(14, density=1.0, glpk=True)
