@@ -6,7 +6,7 @@ import numpy as np
 
 from branchbound import bb_tsp
 from bruteforce import bf_tsp
-from tsp import TSP
+from tsp import TSP, triu
 from tsp_parser import to_mathprog
 
 
@@ -136,15 +136,21 @@ def generate_random_tsp(n, amplitude=100, density=1.0):
         raise ValueError('Density must be in [0,1]')
 
     cost = np.triu(np.random.rand(n, n), 1) * amplitude
+    degree = np.sum(cost < np.inf, axis=0) + np.sum(cost < np.inf, axis=1)
     k = 0
     missing_edges = np.ceil(n * (n - 1) / 2 * (1 - density))
     while k < missing_edges:
-        i = np.random.randint(0, n - 1)
-        j = np.random.randint(i + 1, n)
+        if np.all(degree == 2):
+            raise Exception('Unfeasible solution')
 
-        if cost[i, j] < np.inf:
-            cost[i, j] = np.inf
-            k += 1
+        i = np.random.choice([k for k, v in enumerate(degree) if v > 2])
+        j = np.random.choice([k for k, v in enumerate(cost[:, i]) if v < np.inf and k < i and degree[k] > 2] +
+                             [k for k, v in enumerate(cost[i, :]) if v < np.inf and k > i and degree[k] > 2])
+
+        cost[triu(i, j)] = np.inf
+        tmp = cost + np.tril(np.ones((n, n)) * np.nan)
+        degree = np.sum(tmp < np.inf, axis=0) + np.sum(tmp < np.inf, axis=1)
+        k += 1
 
     return TSP(cost)
 
@@ -278,10 +284,9 @@ def branchbound_balas_ex1_test(glpk=False, save=False):
 
     if glpk:
         to_mathprog(inst.cost_mat, 'instances/balas_ex1.mod')
-        print('======================================')
         os.system('glpsol --math instances/balas_ex1.mod')
-        print()
 
+    print('======================================\nBranch and bound:')
     start = time.time()
     x, z = bb_tsp(inst)
     end = time.time()
@@ -306,15 +311,13 @@ def branchbound_negative_cost_test(glpk=False, save=False):
 
     if glpk:
         to_mathprog(inst.cost_mat, 'instances/negative_cost.mod')
-        print('======================================')
         os.system('glpsol --math instances/negative_cost.mod')
-        print()
 
     start = time.time()
     x, z = bb_tsp(inst)
     end = time.time()
 
-    print('Branch and bound:')
+    print('======================================\nBranch and bound:')
     print(f'Best tour: {get_tour(x)}')
     print(f'Cost: {z}')
     print(f'Time: {end - start}')
@@ -347,11 +350,9 @@ def branchbound_15_sparse_test(glpk=False, save=False):
 
     if glpk:
         to_mathprog(inst.cost_mat, 'instances/random.mod')
-        print('======================================')
         os.system('glpsol --math instances/random.mod')
-        print()
 
-    print('Branch and bound:')
+    print('======================================\nBranch and bound:')
     start = time.time()
     x, z = bb_tsp(inst)
     end = time.time()
@@ -370,11 +371,9 @@ def branchbound_random(n, amplitude=100, density=0.5, glpk=False):
 
     if glpk:
         to_mathprog(inst.cost_mat, 'instances/random.mod')
-        print('======================================')
         os.system('glpsol --math instances/random.mod')
-        print()
 
-    print('Branch and bound:')
+    print('======================================\nBranch and bound:')
     start = time.time()
     x, z = bb_tsp(inst)
     end = time.time()
@@ -385,4 +384,4 @@ def branchbound_random(n, amplitude=100, density=0.5, glpk=False):
 
 
 if __name__ == '__main__':
-    branchbound_random(14, density=1.0, glpk=True)
+    branchbound_balas_ex1_test(glpk=True)
