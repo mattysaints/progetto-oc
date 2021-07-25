@@ -365,7 +365,7 @@ def branchbound_15_sparse_test(glpk=False, save=False):
         print(inst.to_latex())
 
 
-def branchbound_random(n, amplitude=100, density=0.5, glpk=False):
+def branchbound_random(n, amplitude=100, density=0.5, glpk=False, save=False):
     """Executes the test of branch and bound algorithm using a random graph"""
     inst = generate_random_tsp(n, amplitude, density)
 
@@ -382,6 +382,11 @@ def branchbound_random(n, amplitude=100, density=0.5, glpk=False):
     print(f'Cost: {z}')
     print(f'Time: {end - start}')
 
+    if save:
+        print(inst.to_latex())
+
 
 if __name__ == '__main__':
-    branchbound_balas_ex1_test(glpk=True)
+    # branchbound_balas_ex1_test(glpk=True)
+    # branchbound_13_cities_test(glpk=False)
+    branchbound_random(16,density=.5,glpk=True)
