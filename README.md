@@ -1,12 +1,15 @@
 # Algoritmo *branch&bound* per il TSP
-Tesina di Ottimizzazione Combinatoria
+Tesina di **Ottimizzazione Combinatoria**
 
-### Algoritmo *branch&bound*
-Da implementare
+*Davide Zago* e *Mattia Marra*
 
-### Algoritmo *bruteforce*
-Implementato, fare verifiche e confrontare con *branch&bound*
+## Codice
+- [algoritmo branch&bound](branchbound.py)
+- [test algoritmo branch&bound](efficiency_test.py)
 
-### Risoluzione tramite solver PLI
-Valutare se farlo
+- [algoritmo brute-force per il confronto](bruteforce.py)
 
+## Come eseguire
+```shell
+python efficiency_test.py
+```
