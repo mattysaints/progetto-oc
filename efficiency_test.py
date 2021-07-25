@@ -387,6 +387,6 @@ def branchbound_random(n, amplitude=100, density=0.5, glpk=False, save=False):
 
 
 if __name__ == '__main__':
-    # branchbound_balas_ex1_test(glpk=True)
-    # branchbound_13_cities_test(glpk=False)
-    branchbound_random(16,density=.5,glpk=True)
+    # branchbound_balas_ex1_test(glpk=False)
+    branchbound_13_cities_test(glpk=False)
+    # branchbound_random(16,density=.5,glpk=False)
