@@ -1,5 +1,5 @@
-import pprint
-from collections import Counter
+
+from collections import deque
 
 import numpy as np
 
@@ -82,10 +82,10 @@ def bb_tsp(tsp: TSP):
     u = np.inf
     best_tour = None
     x_p = np.zeros(tsp.cost_mat.shape)
-    stack = [(set(), set())]
+    stack = deque([(set(), set())])
 
     while stack:
-        excluded, included = stack.pop(0)
+        excluded, included = stack.popleft()
 
         if not unfeasible(excluded, included, tsp):
             z_p = np.inf
@@ -105,7 +105,7 @@ def bb_tsp(tsp: TSP):
 
                     if edge:
                         i, j = edge
-                        stack = [(excluded | {triu(i, j)}, included), (excluded, included | {triu(i, j)})] + stack
+                        stack.extendleft([(excluded | {triu(i, j)}, included), (excluded, included | {triu(i, j)})])
 
     if u == np.inf:
         return None, np.inf
